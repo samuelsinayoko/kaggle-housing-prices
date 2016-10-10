@@ -1,2 +1,3 @@
-# kaggle-housing-prices
-Exploring the Kaggle housing prices competition
+# House prices advanced regression techniques
+Exploring the Kaggle house prices competition
+https://www.kaggle.com/c/house-prices-advanced-regression-techniques
