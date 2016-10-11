@@ -31,3 +31,5 @@ scatter_matrix(data, alpha=0.2, figsize=(6, 6), diagonal='kde')
 https://altair-viz.github.io/index.html
 looks awesome. A bit tricky to install without conda
 : conda install altair --channel conda-forge
+* FAQ
+-> How would you facet your scatter plot?
