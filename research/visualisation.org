@@ -1,0 +1,29 @@
+http://machinelearningmastery.com/quick-and-dirty-data-analysis-with-pandas/
+* Univariate data / Series
+- scatter plot
+- histogram
+- density plot (generalises histogram)
+- quantile plots (???)
+* Data transformations
+- log scale
+- exponential
+- power low (e.g. inverse, quadratic)
+
+* Conditional plots
+- use a categorical variable to group values and plot scatter plot with different colors
+- use a categorical variable to group values and plot histograms
+- See Trellis Plot
+- =pd.pivot_table=
+
+* Multivariate / Data Frames
+- box and whiskers plots
+  + use df.boxplot in pandas
+- df.hist
+- feature/feature relationships + Kernel Density Estimation
+Very powerful plot from which a lot of inspiration can be drawn
+#+BEGIN_SRC python
+Python
+from pandas.tools.plotting import scatter_matrix
+scatter_matrix(data, alpha=0.2, figsize=(6, 6), diagonal='kde')
+#+END_SRC
+- Trellis Plot: relationship between two variables conditioned on one or more variables
