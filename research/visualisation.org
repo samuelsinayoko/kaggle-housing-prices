@@ -27,3 +27,7 @@ from pandas.tools.plotting import scatter_matrix
 scatter_matrix(data, alpha=0.2, figsize=(6, 6), diagonal='kde')
 #+END_SRC
 - Trellis Plot: relationship between two variables conditioned on one or more variables
+* Altair
+https://altair-viz.github.io/index.html
+looks awesome. A bit tricky to install without conda
+: conda install altair --channel conda-forge
