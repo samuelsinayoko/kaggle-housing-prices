@@ -15,3 +15,10 @@ To update the environment
 ```
 conda env update --file=environment.yml
 ```
+
+## nbstripout
+Use nbstripout (https://pypi.python.org/pypi/nbstripout) to strip the output from the notebooks before committing (makes logs more readable). Run the following in your repository to activate (`nbstripout` should have been pip installed in the virtual environment)
+
+```
+nbstripout --install
+```
