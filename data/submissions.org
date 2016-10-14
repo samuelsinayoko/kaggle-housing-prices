@@ -1,0 +1,4 @@
+| date                   | filename                            | notebook                                  |   score | leaderboard |
+|------------------------+-------------------------------------+-------------------------------------------+---------+-------------|
+| <2016-10-14 Fri 14:40> | ols_key_numerical_features_only.csv | data_exploration_numerical_features.ipynb | 0.13984 | 564         |
+|                        |                                     |                                           |         |             |
