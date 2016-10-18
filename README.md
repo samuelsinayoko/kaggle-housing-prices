@@ -26,8 +26,9 @@ nbstripout --install
 # TODO
 
 - Refactor data exploration notebook
- + Move regression to another notebook
- + Save transformed data to csv file
- + Save useful functions/classes into a library
+ + DONE Move regression to another notebook
+ + DONE Save transformed data to csv file
+ + STARTED Save useful functions/classes into a library
+ + TODO Clean up numerical notebook using method chaining
 - Explore categorical features and identify key ones
 - Encode categorical features and include them into a more complex regression model
