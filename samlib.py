@@ -1,8 +1,12 @@
 """An ML library to help with Kaggle problems.
 """
 import pandas as pd
+import seaborn as sns
 import sklearn.base
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Regressor(sklearn.base.BaseEstimator):
@@ -31,6 +35,8 @@ class DataSet:
          The test dataset, kept in sync with df.
     """
     def __init__(self, raw_train, raw_test):
+        logger.warn('DeprecationWarning: use `pd.concat([raw_train, raw_test], keys=["train", "test"])` '
+                    'instead of this class')
         self.raw_train = raw_train
         self.raw_test = raw_test
         self.train = self.raw_train.copy()
@@ -90,3 +96,75 @@ class DataSet:
             except AttributeError:
                 print("Unable to find attribute {!r} in self nor in self.df".format(attr))
                 raise
+
+
+
+def fillna(df, wok, columns=None, **kwargs):
+    """Apply callable parameter `wok` to fill the null values in `df`.
+
+    Can be used in a pipe chain. This is unlike the default pandas
+    dataframe `fillna` method that does not take a callable as a
+    parameter nor a `columns` parameter. The `columns` argument allows
+    one to apply the callable to only a subset of the input dataframe
+    (while still returning a dataframe of the same shape as the
+    original dataframe).
+
+    Parameters
+    ----------
+    df: DataFrame (or Series)
+         The object we want to fill the null values in.
+    wok: callable or string
+        Aggregate function, of the form df -> df' = foo(df), used to
+        fill the null values. If it's a string, apply the method whose
+        name is wok. Examples: np.nanmean, np.nanmedian, 'mean',
+        'median'.
+    columns: List[str], optional
+        The list of columns to fill the null values in.
+    kwargs: dict, optional
+        Optional arguments passed to pd.fillna.
+
+    Returns
+    -------
+    A dataframe having the same shape as df.
+
+    """
+    if columns is not None:
+        df = df.copy()
+        df.loc[:, columns] = fillna(df.loc[:, columns], wok, **kwargs)
+        return df
+
+    if callable(wok):
+        return df.fillna(wok(df), **kwargs)
+    elif isinstance(wok, str):
+        if hasattr(df, wok):
+            return df.fillna(getattr(df, wok)(), **kwargs)
+        else:
+            raise TypeError('{!r} method not found in {!r}', wok, df)
+
+
+def has_nulls(df):
+    """Return boolean indicating whether input dataframe `df` has got null values"""
+    return df.isnull().sum().any()
+
+
+# Plotting functions
+def violinplot(df, ax=None):
+    if ax is None:
+        ax = plt.gca()
+    sns.violinplot(df, ax=ax)
+    for xlab in ax.get_xticklabels():
+        xlab.set_rotation(30)
+
+
+
+def featureplot(df, nrows=1, figsize=(12,8), plotfunc=violinplot):
+    """Plot the dataframe features"""
+    width, height = figsize
+    fig, axes = plt.subplots(nrows, 1, figsize=(width, height * nrows));
+    i = 0
+    plots_per_figure = df.shape[1] // nrows
+    if nrows == 1:
+        axes = [axes]
+    for j, ax in zip(range(plots_per_figure, df.shape[1] + 1, plots_per_figure), axes):
+        plotfunc(df.iloc[:, i:j], ax=ax)
+        i = j
