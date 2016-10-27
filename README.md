@@ -28,7 +28,9 @@ nbstripout --install
 - Refactor data exploration notebook
  + DONE Move regression to another notebook
  + DONE Save transformed data to csv file
- + STARTED Save useful functions/classes into a library
- + TODO Clean up numerical notebook using method chaining
+ + DONE Save useful functions/classes into a library
+ + DONE Clean up numerical notebook using method chaining
+ + TODO Move standardization to regression notebook
 - Explore categorical features and identify key ones
+ + Study effect of standardizing the data http://sebastianraschka.com/Articles/2014_about_feature_scaling.html
 - Encode categorical features and include them into a more complex regression model
