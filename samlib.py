@@ -240,7 +240,6 @@ def featureplot2(df, ncols=1, size=5, aspect=0.5, plotfunc=sns.violinplot,
     lf = df.stack().reset_index(name="value")
     lf = lf.drop([c for c in lf.columns if c.startswith('level_')], axis=1)
     # Visualize with Seaborn
-    width, height = figsize
     g = sns.FacetGrid(lf, col=feature, hue=feature,
                       sharex=False, sharey=False, col_wrap=ncols,
                       size=size, aspect=aspect)
