@@ -31,6 +31,10 @@ nbstripout --install
  + DONE Save useful functions/classes into a library
  + DONE Clean up numerical notebook using method chaining
  + TODO Move standardization to regression notebook
+- Plot linear regressions using `featureplot2` (easier?)
+- Exclude zero values for `MasVnrArea`, `WoodDeckSF`, `OpenPorchSF`, and the like to improve regression. This is an additional step that should improve the model.
+  + Replace by median
+  + Use linear model to replace missing vals
 - Explore categorical features and identify key ones
  + Study effect of standardizing the data http://sebastianraschka.com/Articles/2014_about_feature_scaling.html
 - Encode categorical features and include them into a more complex regression model
