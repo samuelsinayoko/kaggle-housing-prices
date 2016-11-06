@@ -64,7 +64,6 @@ dependencies:
 - setuptools=27.2.0=py35_0
 - six=1.10.0=py35_0
 - sqlite=3.13.0=0
-- statsmodels=0.6.1=np111py35_1
 - tk=8.5.18=0
 - wheel=0.29.0=py35_0
 - xz=5.2.2=0
@@ -105,5 +104,5 @@ dependencies:
   - vega==0.4.2
   - wcwidth==0.1.7
   - widgetsnbextension==1.2.6
+  - statsmodels==0.8.0rc1
 prefix: /Users/sinayoks/anaconda/envs/house
-
