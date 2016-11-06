@@ -219,7 +219,7 @@ def featureplot(df, nrows=1, ncols=1, figsize=(12,8), plotfunc=sns.violinplot, *
     if nrows > 1 and ncols > 1:
         axes = chain.from_iterable(axes)  # flatten the nested list
     for j, ax in zip(range(plots_per_figure, df.shape[1] + 1, plots_per_figure), axes):
-        plotfunc(data=df.iloc[:, i:j], ax=ax)
+        plotfunc(data=df.iloc[:, i:j], ax=ax, **kwargs)
         i = j
     plt.tight_layout()
 
