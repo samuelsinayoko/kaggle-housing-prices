@@ -223,6 +223,38 @@ def featureplot(df, nrows=1, ncols=1, figsize=(12,8), plotfunc=sns.violinplot, *
         i = j
     plt.tight_layout()
 
+def featureplots(df, nrows=1, ncols=1, figsize=(12,8), plotfuncs=(sns.violinplot,), axis=1, **kwargs):
+    """Plot the dataframe features.
+    Use Matplotlib to plot individual features accross columns.
+    """
+    width, height = figsize
+    nfuncs = len(plotfuncs)
+
+    if axis == 1:
+        # Cycle plotfuncs accross columns
+        a = nfuncs
+        b = 1
+        funclst = plotfuncs * nrows * ncols
+    elif axis == 0:
+        # Cycle plotfuncs accross rows
+        a = 1
+        b = nfuncs
+        funclst = zip(*(plotfuncs * ncols))
+    else:
+        ValueError('axis must be 0 or 1')
+    fig, axes = plt.subplots(nrows, ncols, figsize=(width * ncols * a, height * nrows * b));
+    i = 0
+    plots_per_figure = max(df.shape[1] // (nrows * ncols), 1)
+    if nrows == 1 and ncols == 1:
+        axes = [axes]
+    if nrows > 1 and ncols > 1:
+        axes = chain.from_iterable(axes)  # flatten the nested list
+    # TODO: must generalize this so we can loop over rows. Possibly use a gridspec instead of fig,axes?
+    for j, ax in zip(range(plots_per_figure, df.shape[1] + 1, plots_per_figure), axes):
+        plotfunc(data=df.iloc[:, i:j], ax=ax, **kwargs)
+        i = j
+    plt.tight_layout()
+
 ## - using Seaborn and long form data (5 times slower than featureplot)
 def featureplot2(df, ncols=1, size=5, aspect=0.5, plotfunc=sns.violinplot,
                  hook=None, **map_kwargs):
