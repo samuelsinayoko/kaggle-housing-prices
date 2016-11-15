@@ -1,10 +1,11 @@
 """An ML library to help with Kaggle problems.
 """
-from itertools import chain
+from itertools import chain, repeat
 import logging
 
 import matplotlib.pyplot as plt
 
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import sklearn.base
@@ -210,6 +211,7 @@ def featureplot(df, nrows=1, ncols=1, figsize=(12,8), plotfunc=sns.violinplot, *
     """Plot the dataframe features.
     Use Matplotlib to plot individual features accross columns.
     """
+    logger.warning('DEPRECATED: use the more general `featureplots` instead')
     width, height = figsize
     fig, axes = plt.subplots(nrows, ncols, figsize=(width, height * nrows));
     i = 0
@@ -223,37 +225,97 @@ def featureplot(df, nrows=1, ncols=1, figsize=(12,8), plotfunc=sns.violinplot, *
         i = j
     plt.tight_layout()
 
-def featureplots(df, nrows=1, ncols=1, figsize=(12,8), plotfuncs=(sns.violinplot,), axis=1, **kwargs):
+
+def reshape(arr, ncols=1, nrows=-1, force=True):
+    """Reshape input data to the given shape.
+    Fill with nans if the new shape is too large.
+    """
+    arr = np.asarray(arr)
+    try:
+        return arr.reshape((nrows, ncols))
+    except ValueError:
+        if force:
+            if nrows == ncols == -1:
+                raise ValueError
+            if nrows == -1:
+                nrows = int(np.ceil(arr.size / ncols))
+            if ncols == -1:
+                ncols = int(np.ceil(arr.size / nrows))
+            size = nrows * ncols
+            flat = arr.flatten()
+            if size < flat.size:
+                # Chop the plot
+                return flat[:size].reshape((nrows, ncols))
+            elif size > flat.size:
+                new = np.zeros(size, dtype=arr.dtype)
+                new[:flat.size] = arr
+                return new.reshape((nrows, ncols))
+        else:
+            raise
+
+
+def tile_funcs(plotfuncs, nrows=1, ncols=1, axis=1):
+    """Return rowise iterator along axis"""
+    if axis == 1:
+        block = np.array(plotfuncs)
+    elif axis == 0:
+        block = np.array(plotfuncs).reshape((-1, 1))
+    row_block = np.hstack([block] * ncols)
+    return np.vstack([row_block] * nrows)
+
+
+def tile_features(features, nfuncs, nrows=-1, ncols=1, axis=1):
+    """Return rowise iterator along axis"""
+
+    def chunklist(features, nfuncs, ncols=None, axis=1):
+        """Yield successive n-sized chunks from l."""
+        if axis == 1:
+            return list(chain(*zip(*repeat(features, nfuncs))))
+        elif axis == 0:
+            assert ncols is not None
+            n = ncols
+            size = int(np.ceil(len(features)/float(n))) * n
+            lst = list(reshape(features, ncols=size).squeeze())
+            res = []
+            for i in range(0, len(lst), n):
+                res.append(chain(*repeat(lst[i:i + n], nfuncs)))
+            return list(chain(*res))
+
+    if axis == 1:
+        lst = chunklist(features, nfuncs, ncols, axis)
+        m, n = nrows, ncols * nfuncs
+        return reshape(lst, ncols=n, nrows=m)
+    elif axis == 0:
+        lst = chunklist(features, nfuncs, ncols, axis=0)
+        m, n = nrows * nfuncs, ncols
+        return reshape(lst, ncols=n, nrows=m)
+
+
+def featureplots(df, nrows=1, ncols=1, figsize=(4, 4),
+                 plotfuncs=(sns.violinplot,), axis=1, **kwargs):
     """Plot the dataframe features.
     Use Matplotlib to plot individual features accross columns.
     """
     width, height = figsize
-    nfuncs = len(plotfuncs)
 
-    if axis == 1:
-        # Cycle plotfuncs accross columns
-        a = nfuncs
-        b = 1
-        funclst = plotfuncs * nrows * ncols
-    elif axis == 0:
-        # Cycle plotfuncs accross rows
-        a = 1
-        b = nfuncs
-        funclst = zip(*(plotfuncs * ncols))
-    else:
-        ValueError('axis must be 0 or 1')
-    fig, axes = plt.subplots(nrows, ncols, figsize=(width * ncols * a, height * nrows * b));
-    i = 0
-    plots_per_figure = max(df.shape[1] // (nrows * ncols), 1)
-    if nrows == 1 and ncols == 1:
+    # Get list of functions
+    funcs = tile_funcs(plotfuncs, nrows, ncols, axis)
+    funclst = funcs.flatten()
+
+    # Get the list of features
+    featlst = tile_features(df.columns, len(plotfuncs), nrows, ncols, axis).flatten()
+    # Get rowise list of axes
+    m, n = funcs.shape
+    fig, axes = plt.subplots(nrows, ncols, figsize=(width * n, height * m));
+    if m == 1 and n == 1:
         axes = [axes]
-    if nrows > 1 and ncols > 1:
+    if m > 1 and ncols > 1:
         axes = chain.from_iterable(axes)  # flatten the nested list
-    # TODO: must generalize this so we can loop over rows. Possibly use a gridspec instead of fig,axes?
-    for j, ax in zip(range(plots_per_figure, df.shape[1] + 1, plots_per_figure), axes):
-        plotfunc(data=df.iloc[:, i:j], ax=ax, **kwargs)
-        i = j
+
+    for feature, ax, func in zip(featlst, axes, funclst):
+        func(feature, data=df, ax=ax, **kwargs)
     plt.tight_layout()
+
 
 ## - using Seaborn and long form data (5 times slower than featureplot)
 def featureplot2(df, ncols=1, size=5, aspect=0.5, plotfunc=sns.violinplot,
@@ -279,3 +341,37 @@ def featureplot2(df, ncols=1, size=5, aspect=0.5, plotfunc=sns.violinplot,
     if hook is not None:
         h = hook(h)
     return h
+
+
+
+def test_reshape1():
+    """Comformable data"""
+    assert np.all(reshape(np.arange(12), 3) == np.arange(12).reshape((-1, 3)))
+
+
+def test_reshape2():
+    """Not enough data"""
+    q = list(range(10)) + [0, 0]
+    assert np.all(reshape(3, force=True) == q)
+
+
+def test_reshape3():
+    """Too much data"""
+    q = list(range(12))
+    return all( reshape(q, nrows=2, ncols=3, force=True) == np.arange(6).reshape((2,3)) )
+
+
+def test_tile_features_axis1():
+    res = tile_features(list('abcdef'), nfuncs=2, ncols=3, nrows=2, axis=1)
+    exact = np.array([['a', 'a', 'b', 'b', 'c', 'c'],
+                      ['d', 'd', 'e', 'e', 'f', 'f']])
+    assert np.all(res == exact)
+
+
+def test_tile_features_axis0():
+    res = tile_features(list('abcdef'), nfuncs=2, ncols=3, nrows=2, axis=0)
+    exact = np.array([['a', 'b', 'c'],
+                      ['a', 'b', 'c'],
+                      ['d', 'e', 'f'],
+                      ['d', 'e', 'f']])
+    assert np.all(res == exact)
